@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    rps
+{% endblock %}
+
+{% block main %}
+
+
+<form method="post" style="text-align: center;">
+    <button class="btn btn-primary" type="submit" name="choice" value="rock">Rock</button>
+    <button class="btn btn-primary" type="submit" name="choice" value="paper">Paper</button>
+    <button class="btn btn-primary" type="submit" name="choice" value="scissors">Scissors</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <td>Player</td>
+            <td></td>
+            <td>Computer</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                Score: {{ you }}
+            </td>
+            <td></td>
+            <td>
+                Score: {{ ai }}
+            </td>
+        </tr>
+        <tr>
+            <td>{% if player_image %}
+                <img src="{{ url_for('static', filename=player_image) }}" alt="Your Choice">
+                {% endif %}
+            </td>
+            <td>{% if player_image %}
+                You {{ result }}!
+                {% endif %}
+            </td>
+            <td>
+                {% if comp_image %}
+                <img src="{{ url_for('static', filename=comp_image) }}" alt="Computer's Choice">
+                {% endif %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+
+{% endblock %}

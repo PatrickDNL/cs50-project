@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    hangman
+{% endblock %}
+
+{% block main %}
+
+
+<form method="post" type="letter" required>
+    <div class="mb-3">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="guess" name="guess" placeholder="letter" type="text" maxlength="1">
+    </div>
+    <button class="btn btn-primary" type="submit">Guess</button>
+</form>
+
+<p>{{ display }}</p>
+<p>{{ attempts }} attempts left</p>
+
+{% endblock %}

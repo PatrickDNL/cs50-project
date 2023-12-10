@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    hl
+{% endblock %}
+
+{% block main %}
+
+
+<table>
+    <thead>
+        <tr>
+            <td>number</td>
+            <td>higher</td>
+            <td>tie</td>
+            <td>lower</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ random_number }}</td>
+            <td><p><form method="post">
+                <button class="btn btn-primary" type="submit" name="choice" value="higher">Higher</button>
+            </form></p></td>
+            <td><p><form method="post">
+                <button class="btn btn-primary" type="submit" name="choice" value="tie">tie</button>
+            </form></p></td>
+            <td><p><form method="post">
+                <button class="btn btn-primary" type="submit" name="choice" value="lower">Lower</button>
+            </form></p></td>
+        </tr>
+    </tbody>
+</table>
+
+{% endblock %}
