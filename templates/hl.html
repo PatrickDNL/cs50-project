@@ -6,6 +6,7 @@
 
 {% block main %}
 
+<p>You get a number, guess if the next will be higher, lower, or equal!</p>
 
 <table>
     <thead>
@@ -31,5 +32,18 @@
         </tr>
     </tbody>
 </table>
+
+{% if win %}
+    <div class="alert alert-success" role="alert">
+        Congratulations, you win! Your current score is: {{ score }}!
+    </div>
+{% endif %}
+{% if loss %}
+    <div class="alert alert-danger" role="alert">
+        Sorry, you've lost. Your current score is: {{ score }}!
+    </div>
+{% endif %}
+
+
 
 {% endblock %}

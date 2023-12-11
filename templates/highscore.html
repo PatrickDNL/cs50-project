@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Highscore
+{% endblock %}
+
+{% block main %}
+
+<p>Top 10 overall Highscores:</p>
+
+<table>
+    <thead>
+        <tr>
+            <td>Player</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for score in o_highscore %}
+        <tr>
+            <td>{{ score.username }}</td>
+            <td>{{ score.total_points }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>Top 10 Rock Paper Scissor Highscores:</p>
+
+<table>
+    <thead>
+        <tr>
+            <td>Player</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for score in r_highscore %}
+        <tr>
+            <td>{{ score.username }}</td>
+            <td>{{ score.total_points }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>Top 10 Higher Lower Highscores:</p>
+
+<table>
+    <thead>
+        <tr>
+            <td>Player</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for score in hl_highscore %}
+        <tr>
+            <td>{{ score.username }}</td>
+            <td>{{ score.total_points }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>Top 10 Hangman Highscores:</p>
+
+<table>
+    <thead>
+        <tr>
+            <td>Player</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for score in h_highscore %}
+        <tr>
+            <td>{{ score.username }}</td>
+            <td>{{ score.total_points }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

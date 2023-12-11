@@ -6,6 +6,7 @@ import subprocess
 import urllib
 import uuid
 from cs50 import SQL
+import random
 
 import sqlite3
 
@@ -40,3 +41,11 @@ def login_required(f):
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
+
+def hangman_word(file_path):
+    with open(file_path, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        words_and_points = [(row[1], int(row[2])) for row in reader if row[2].isdigit()]
+
+    word, points = random.choice(words_and_points)
+    return word.upper(), points

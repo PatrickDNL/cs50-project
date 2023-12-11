@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    profile
+{% endblock %}
+
+{% block main %}
+
+<p>Change your profile info here</p>
+
+<form method="post">
+    <div class="mb-3">
+        <a>Username: {{  username  }} </a>
+    </div>
+    <div class="mb-3">
+        <label>Current First Name: {{ first_name }}</label>
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="first_name" name="first_name" placeholder="New First Name" type="text" value="first_name" required>
+    </div>
+    <div class="mb-3">
+        <label>Current Last Name: {{ last_name }}</label>
+        <input autocomplete="off" class="form-control mx-auto w-auto" id="last_name" name="last_name" placeholder="New Last Name" type="text" value="last_name"required>
+    </div>
+    <div class="mb-3">
+        <label>Current Email: {{ email }}</label>
+        <input autocomplete="off" class="form-control mx-auto w-auto" id="email" name="email" placeholder="New Email" type="email" value="email"required>
+    </div>
+    <div class="mb-3">
+        <label>Current Country: {{ country }}</label>
+        <input autocomplete="off" class="form-control mx-auto w-auto" id="country" name="country" placeholder="New Country" type="text" value="country"required>
+    </div>
+    <div class="mb-3">
+        <label>Current City: {{ city }}</label>
+        <input autocomplete="off" class="form-control mx-auto w-auto" id="city" name="city" placeholder="New City" type="text" value="city"required>
+    </div>
+    <div class="mb-3">
+        <label>Current Birthdate: {{  DoB  }}</label>
+        <input autocomplete="off" class="form-control mx-auto w-auto" id="birthdate" name="birthdate" type="date" value="DD-MM-YYYY"required>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Submit Changes</button>
+</form>
+
+
+{% endblock %}

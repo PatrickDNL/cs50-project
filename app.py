@@ -8,7 +8,7 @@ from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 import random
 
-from helpers import apology, login_required
+from helpers import apology, login_required, hangman_word
 
 
 
@@ -154,14 +154,29 @@ def rps():
         # Compare choices and update scores in session
         if comp_choice == choice:
             result = "tie"
+
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Rock Paper Scissors", choice, "tie", 0)
+
         elif (choice == "rock" and comp_choice == "scissors") or \
              (choice == "scissors" and comp_choice == "paper") or \
              (choice == "paper" and comp_choice == "rock"):
             session['score_you'] += 1
             result = "win"
+
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Rock Paper Scissors", choice, "win", 1)
+
         else:
             session['score_ai'] += 1
             result = "lose"
+
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Rock Paper Scissors", choice, "loss", -1)
+
 
         player_image = f"you_{choice}.png"
         comp_image = f"comp_{comp_choice}.png"
@@ -174,48 +189,63 @@ def rps():
 def hl():
     """higher lower"""
 
-    random_number = random.randint(1, 100)
+    win = False
+    loss = False
 
-    if request.method == "GET":
-        return render_template ("hl.html", random_number = random_number)
+    if 'score' not in session:
+        session['score'] = 0
 
     if request.method == "POST":
-        random_number_ai = random.randint(1,100)
+        random_number_ai = random.randint(1, 100)
         choice = request.form.get("choice")
 
-        print(random_number)
-        print(random_number_ai)
+        # Retrieve the last random number from the session
+        random_number = session.get('random_number', 0)
 
-        if choice == "higher":
-            if random_number > random_number_ai:
-                return apology ("correct")
-            else:
-                return apology ("incorrect")
+        if (choice == "higher" and random_number < random_number_ai) or \
+           (choice == "lower" and random_number > random_number_ai):
+            session['score'] += 1
+            win = True
 
-        if choice == "tie":
-            if random_number == random_number_ai:
-                return apology ("correct")
-            else:
-                return apology ("incorrect")
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Higher Lower", choice, "win", 1)
 
-        if choice == "lower":
-            if random_number < random_number_ai:
-                return apology ("correct")
-            else:
-                return apology ("incorrect")
+        elif choice == "tie" and random_number == random_number_ai:
+            win = True
 
-        return apology ("post")
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Higher Lower", choice, "win", 100)
+
+        else:
+            loss = True
+
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Higher Lower", choice, "loss", -1)
+
+        # Generate a new random number for the next round
+        session['random_number'] = random.randint(1, 100)
+
+    else:  # This is a GET request
+        if 'random_number' not in session:  # Only generate if not already present
+            session['random_number'] = random.randint(1, 100)
+
+    # Render template for both GET and POST requests
+    return render_template("hl.html", random_number=session['random_number'],
+                           win=win, loss=loss, score=session['score'])
 
 @app.route('/hangman', methods=["GET", "POST"])
 @login_required
 def hangman():
     """hangman"""
 
-    words = ["example", "hangman", "python", "flask"]
+    word, points = hangman_word('/workspaces/118817954/project/dictionary.csv')
 
     if request.method == "GET":
 
-        session['word'] = random.choice(words).upper()
+        session['word'] = word
         session['display'] = "_ " * len(session['word'])
         session['attempts'] = 10
         return render_template("hangman.html", display=session['display'], attempts=session['attempts'])
@@ -238,17 +268,113 @@ def hangman():
         else:
             session['attempts'] -= 1
 
+        win = False
+        loss = False
+
         if "_" not in session['display']:
-            return apology("win")  # Display a winning message
+            win = True  # Display a winning message
+
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Hangman", word, "win", points)
+
         elif session['attempts'] <= 0:
-            return apology("loss")  # Display a losing message
+            loss = True
 
-        return render_template("hangman.html", display=session['display'], attempts=session['attempts'])
+            user_id = session.get("user_id")
+            db.execute("INSERT INTO game_rounds (user_id, timestamp, game, input, result, points) VALUES (?, ?, ?, ?, ?, ?)",
+                   user_id, datetime.datetime.now(), "Hangman", word, "Loss", -points)
+
+        return render_template("hangman.html", display=session['display'], attempts=session['attempts'], win=win, loss=loss, word=word)
 
 
-@app.route('/gsq')
+@app.route('/statistics')
 @login_required
-def gsq():
-    """Google Search Query"""
-    return apology ("error gsq")
+def statistics():
 
+    # Calculate pick rate for Rock Paper Scissors
+    pick_rate_rps = db.execute("SELECT input, COUNT(*) * 100.0 / (SELECT COUNT(*) FROM game_rounds WHERE game = 'Rock Paper Scissors') AS percentage FROM game_rounds WHERE game = 'Rock Paper Scissors' GROUP BY input")
+
+    # Calculate win/tie/loss rate per input for Rock Paper Scissors
+    win_rate_rps = db.execute("SELECT g.input, g.result, COUNT(g.result) AS count, COUNT(g.result) * 100.0 / t.total_count AS percentage FROM game_rounds AS g JOIN (SELECT input, COUNT(*) AS total_count FROM game_rounds WHERE game = 'Rock Paper Scissors' GROUP BY input) AS t ON g.input = t.input WHERE g.game = 'Rock Paper Scissors' GROUP BY g.input, g.result")
+
+    # Calculate pick rate of higer lower
+    pick_rate_hl = db.execute("SELECT input, COUNT(*) * 100.0 / (SELECT COUNT(*) FROM game_rounds WHERE game = 'Higher Lower') AS percentage FROM game_rounds WHERE game = 'Higher Lower' GROUP BY input")
+
+    # Calculate win rate higher / tie / loss
+    win_rate_hl = db.execute("SELECT g.input, g.result, COUNT(g.result) AS count, COUNT(g.result) * 100.0 / t.total_count AS percentage FROM game_rounds AS g JOIN (SELECT input, COUNT(*) AS total_count FROM game_rounds WHERE game = 'Higher Lower' GROUP BY input) AS t ON g.input = t.input WHERE g.game = 'Higher Lower' GROUP BY g.input, g.result")
+
+    # Calculate avg. points per input
+    avg_pt_hl = db.execute("SELECT g.input, AVG(g.points) AS avg_points FROM game_rounds AS g WHERE g.game = 'Higher Lower' GROUP BY g.input")
+
+    # Word count
+    word_count = db.execute("SELECT input, COUNT(input) AS input_count FROM game_rounds WHERE game = 'Hangman' GROUP BY input ORDER BY input_count DESC limit 10;")
+
+    # Pass the entire pick_rate_rps list to the template
+    return render_template("statistics.html", pick_rate_rps=pick_rate_rps, win_rate_rps=win_rate_rps, pick_rate_hl=pick_rate_hl, win_rate_hl=win_rate_hl, avg_pt_hl=avg_pt_hl, word_count=word_count)
+
+@app.route('/highscore')
+@login_required
+def highscore():
+    """Show highscores for various games."""
+
+    # Overall high scores
+    o_highscore = db.execute("""SELECT u.username, SUM(gr.points) AS total_points FROM game_rounds gr JOIN users u ON gr.user_id = u.id GROUP BY u.username ORDER BY SUM(gr.points) DESC LIMIT 10 """)
+
+    # Rock Paper Scissors high scores
+    r_highscore = db.execute("""SELECT u.username, SUM(gr.points) AS total_points FROM game_rounds gr JOIN users u ON gr.user_id = u.id WHERE gr.game = 'Rock Paper Scissors' GROUP BY u.username ORDER BY SUM(gr.points) DESC LIMIT 10 """)
+
+    # Higher Lower high scores
+    hl_highscore = db.execute("""SELECT u.username, SUM(gr.points) AS total_points FROM game_rounds gr JOIN users u ON gr.user_id = u.id WHERE gr.game = 'Higher Lower' GROUP BY u.username ORDER BY SUM(gr.points) DESC LIMIT 10 """)
+
+    # Hangman high scores
+    h_highscore = db.execute("""SELECT u.username, SUM(gr.points) AS total_points FROM game_rounds gr JOIN users u ON gr.user_id = u.id WHERE gr.game = 'Hangman' GROUP BY u.username ORDER BY SUM(gr.points) DESC LIMIT 10 """)
+
+    # Pass the high scores to the template
+    return render_template("highscore.html", o_highscore=o_highscore, r_highscore=r_highscore, hl_highscore=hl_highscore, h_highscore=h_highscore)
+
+
+@app.route('/profile', methods=["GET", "POST"])
+@login_required
+def profile():
+    """profile info"""
+
+    user_id = session.get("user_id")
+
+    if request.method == "GET":
+        # Fetch all user details with a single query
+        user_details = db.execute("SELECT username, first_name, last_name, email, country, city, birthdate FROM users WHERE id = ?", user_id)
+
+        # Check if the user details were found
+        if user_details:
+            # user_details[0] contains the user's information
+            return render_template("profile.html",
+                                username=user_details[0]['username'],
+                                first_name=user_details[0]['first_name'],
+                                last_name=user_details[0]['last_name'],
+                                email=user_details[0]['email'],
+                                country=user_details[0]['country'],
+                                city=user_details[0]['city'],
+                                DoB=user_details[0]['birthdate'])
+
+    if request.method == "POST":
+        # Extract form data
+        user_id = session.get("user_id")
+        user_result = db.execute("SELECT username FROM users WHERE id = ?", user_id)
+        username = user_result[0]['username']
+
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        country = request.form.get('country')
+        city = request.form.get('city')
+        birthdate = request.form.get('birthdate')
+
+        # Validate that user_id and all form fields are available
+        if user_id and first_name and last_name and email and country and city and birthdate:
+            # Update user details in the database
+            db.execute("UPDATE users SET first_name = ?, last_name = ?, email = ?, country = ?, city = ?, birthdate = ? WHERE username = ?",
+                        first_name, last_name, email, country, city, birthdate, username)
+
+            # Redirect to the profile page to view the changes or show a success message
+            return redirect('/profile')

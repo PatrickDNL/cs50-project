@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Highscore
+{% endblock %}
+
+{% block main %}
+
+<p>Statistics Rock Paper Scissors</p>
+
+Input pick rate
+<table>
+    <thead>
+        <tr>
+            <td>input</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for input in pick_rate_rps %}
+        <tr>
+            <td>{{ input.input }}</td>
+            <td>{{ "{:.2f}".format(input.percentage) }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+Result per input
+<table>
+    <thead>
+        <tr>
+            <td>Input</td>
+            <td>Result</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for input in win_rate_rps %}
+        <tr>
+            <td>{{ input.input }}</td>
+            <td>  {{ input.result}} </td>
+            <td>{{ "{:.2f}".format(input.percentage) }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a>Statistics Higher Lower</a>
+
+Input pick rate
+<table>
+    <thead>
+        <tr>
+            <td>Input</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for input in pick_rate_hl %}
+        <tr>
+            <td>{{ input.input }}</td>
+            <td>{{ "{:.2f}".format(input.percentage) }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+Result per input
+<table>
+    <thead>
+        <tr>
+            <td>Input</td>
+            <td>Result</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for input in win_rate_hl %}
+        <tr>
+            <td>{{ input.input }}</td>
+            <td>  {{ input.result}} </td>
+            <td>{{ "{:.2f}".format(input.percentage) }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a> Average points per input</a>
+<table>
+    <thead>
+        <tr>
+            <td>input</td>
+            <td>Score</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for input in avg_pt_hl %}
+        <tr>
+            <td>{{ input.input }}</td>
+            <td>{{ "{:.2f}".format(input.avg_points) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p> Hangman </p>
+<a> Word count</a>
+<table>
+    <thead>
+        <tr>
+            <td>Word</td>
+            <td>Count</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for input in word_count %}
+        <tr>
+            <td>{{ input.input }}</td>
+            <td>{{ input.input_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

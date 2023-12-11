@@ -7,14 +7,32 @@
 {% block main %}
 
 
+<p>Fill in a single letter to unravel the hidden word.</p>
+
 <form method="post" type="letter" required>
     <div class="mb-3">
         <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="guess" name="guess" placeholder="letter" type="text" maxlength="1">
     </div>
     <button class="btn btn-primary" type="submit">Guess</button>
 </form>
-
+<p>
+    <form action="/hangman" method="get">
+        <button class="btn btn-primary" type="submit">Restart</button>
+    </form>
+</p>
 <p>{{ display }}</p>
 <p>{{ attempts }} attempts left</p>
+
+{% if win %}
+    <div class="alert alert-success" role="alert">
+        Congratulations, you win!
+    </div>
+{% endif %}
+{% if loss %}
+    <div class="alert alert-danger" role="alert">
+        Sorry, you've lost. The word was: {{ word }}
+    </div>
+{% endif %}
+
 
 {% endblock %}
